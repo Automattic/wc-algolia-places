@@ -1,0 +1,10 @@
+.woocommerce-page .algolia-places .ap-input {
+	line-height: auto;
+    height: auto;
+}
+.woocommerce-page .algolia-places button {
+	box-shadow: none;
+}
+.woocommerce-page .algolia-places button:hover {
+	background: none;
+}
