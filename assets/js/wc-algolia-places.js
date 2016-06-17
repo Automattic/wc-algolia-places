@@ -2,7 +2,11 @@
 	// Initialise Algolia Places JS
 	var options = {
 		container: document.querySelector("#billing_address_1"),
-		// ...
+		templates: {
+			value: function(suggestion) {
+				return suggestion.name;
+			}
+		}
 	};
 	var placesAutocomplete = places(options);
 
