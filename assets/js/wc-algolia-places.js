@@ -1,42 +1,62 @@
 (function($) {
-	// Initialise Algolia Places JS
-	var options = {
-		container: document.querySelector("#billing_address_1"),
-		templates: {
-			value: function(suggestion) {
-				return suggestion.name;
-			}
-		}
-	};
-	var placesAutocomplete = places(options);
+	// Get selected country
+	const countryInput = $("select#billing_country");
 
-	// Update address fields when option chosen
-	placesAutocomplete.on('change', function resultSelected(e) {
-		// Country
-		$("select#billing_country").val(e.suggestion.countryCode.toUpperCase()).trigger("change");
-
-		// Address #1
-		$("#billing_address_1").val(e.suggestion.name || '');
-
-		// City / Suburb
-		if (typeof e.suggestion.hit.suburb !== 'undefined') {
-			$("#billing_city").val(e.suggestion.hit.suburb[0]);
-		} else {
-			var city = e.suggestion.city ? e.suggestion.city : e.suggestion.administrative;
-			$("#billing_city").val(city || '');
+	countryInput.on('change', function(e) {
+		// Destroy previous Algolia Places instance if there is one
+		if ($("#billing_address_1").hasClass('ap-input')) {
+			var placesAutocomplete = places({container: document.querySelector("#billing_address_1")});
+			placesAutocomplete.destroy();
 		}
 
-		// Postcode
-		$("#billing_postcode").val(e.suggestion.postcode || '');
-
-		// State
-		var match = $("#billing_state option").filter(function() {
-			return this.text == removeDiacritics(e.suggestion.administrative);
-		});
-		if (match) {
-			$("#billing_state").val(match.val()).trigger("change");
-		}
+		// Create places instance
+		createPlaces();
 	});
+
+	var createPlaces = function() {
+		// Get currently selected country
+		var country = countryInput.val().toLowerCase();
+
+		// Initialise Algolia Places JS
+		var options = {
+			container: document.querySelector("#billing_address_1"),
+			countries: [country],
+			templates: {
+				value: function(suggestion) {
+					return suggestion.name;
+				}
+			}
+		};
+		var placesAutocomplete = places(options);
+
+		// Update address fields when option chosen
+		placesAutocomplete.on('change', function resultSelected(e) {
+			// Country
+			$("select#billing_country").val(e.suggestion.countryCode.toUpperCase()).trigger("change");
+
+			// Address #1
+			$("#billing_address_1").val(e.suggestion.name || '');
+
+			// City / Suburb
+			if (typeof e.suggestion.hit.suburb !== 'undefined') {
+				$("#billing_city").val(e.suggestion.hit.suburb[0]);
+			} else {
+				var city = e.suggestion.city ? e.suggestion.city : e.suggestion.administrative;
+				$("#billing_city").val(city || '');
+			}
+
+			// Postcode
+			$("#billing_postcode").val(e.suggestion.postcode || '');
+
+			// State
+			var match = $("#billing_state option").filter(function() {
+				return this.text == removeDiacritics(e.suggestion.administrative);
+			});
+			if (match) {
+				$("#billing_state").val(match.val()).trigger("change");
+			}
+		});
+	}
 
 	/**
 	 * We need this function replace accented characters (like é) with their standard ones,
